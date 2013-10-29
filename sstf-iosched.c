@@ -1,228 +1,278 @@
-/*
- * sstf 
+/* sstf-iosched.c
+ * OSU - CS 411
+ * Assignment 2
+ * Group 14
+ * Autohrs: hovekame, marickb, zubriske
+ * Last Modified: October 27, 2013 
  */
+
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
 #include <linux/bio.h>
 #include <linux/module.h>
-#include <linux/slab.h>
 #include <linux/init.h>
 
+// Structure used to data references
 struct sstf_data {
-	struct list_head queue;
-	sector_t last_sector; 
-	struct list_head* next_to_dispatch;
-	
-	int queue_count;
+        struct list_head queue;
+        sector_t head_pos;
 };
 
-static int sstf_dispatch(struct request_queue *q, int force)
-{
-	printk("In dispatch.\n");
-	struct sstf_data *nd = q->elevator->elevator_data;
-
-	if (!list_empty(&nd->queue)) {
-		struct request *rq;
-		rq = list_entry(nd->next_to_dispatch, struct request, queuelist);
-
-		if (rq == 0) {
-			printk("failed");
-			return 0;
-		}
-
-		if (nd->queue_count == 1) {
-			printk("Only one item in queue, no calcs needed.\n");
-			list_del_init(&rq->queuelist);
-			nd->queue_count--;
-		}
-
-		else {
-			printk("More than one item in queue to dispatch. \n");
-			//Gets the pointers to the requests that we want
-			struct request* curr_req = list_entry(nd->next_to_dispatch, struct request, queuelist);
-			struct request* prev_req = list_entry(nd->next_to_dispatch->prev, struct request, queuelist);
-			struct request* next_req = list_entry(nd->next_to_dispatch->next, struct request, queuelist);
-		
-			//Gets the sectors	
-			unsigned long the_curr = (unsigned long)blk_rq_pos(curr_req);
-			unsigned long the_prev = (unsigned long)blk_rq_pos(prev_req);
-			unsigned long the_next = (unsigned long)blk_rq_pos(next_req);
-		
-			//Gets the differences	
-			unsigned long diff_prev = 0;
-			unsigned long diff_next = 0;
-
-			if(the_prev > the_curr) {
-				diff_prev = the_prev - the_curr;
-			} else if (the_prev < the_curr) {
-				diff_prev = the_curr - the_prev;
-			} else {
-				// equal
-				diff_prev = 0;
-			}
-
-			if(the_next > the_curr) {
-				diff_next = the_next - the_curr;
-			} else if (the_next < the_curr) {
-				diff_next = the_curr - the_next;
-			} else {
-				diff_next = 0;
-			}
-
-			printk("diff_prev = %lu, diff_next = %lu\n", diff_prev, diff_next);
-
-			//If prev is closer to current, then dispatch prev next
-			if (diff_prev < diff_next) {
-				printk("Diff_prev < diff_next\n");
-				nd->next_to_dispatch = nd->next_to_dispatch->prev;
-			}
-			//else choose next for the next to dispatch
-			else { //(diff_prev >= diff_next) {
-				printk("Diff_next <= diff_prev\n");
-				nd->next_to_dispatch = nd->next_to_dispatch->next;
-			}	
-			
-			//Delete currently dispatched request because it's finished
-        	list_del_init(&rq->queuelist);
-			nd->queue_count--;
-		}
-
-        printk("TEAM8 : Dispatching :%lu\n", (unsigned long)blk_rq_pos(rq));
-		elv_dispatch_sort(q, rq);
-        printk("TEAM8 : Done dispatching. Queue count at %d", nd->queue_count);
-        return 1;
-    }
-    return 0;
+// sstf_balance  - sorts the given element to its correct location
+static void sstf_balance(struct sstf_data * sd) {
+        struct request * rnext, * rprev;
+        sector_t next, prev, pos;
+	// check inputs
+        if(list_empty(&sd->queue))
+                return;
+	// getting adject values 
+        rnext = list_entry(sd->queue.next, struct request, queuelist);
+        next = blk_rq_pos(rnext);
+        
+	rprev = list_entry(sd->queue.prev, struct request, queuelist);
+        prev = blk_rq_pos(rprev);
+        
+	pos = sd->head_pos;
+	//Sort occurs within while loop, until correct position found
+        while(1) {
+                //Upper edge
+                if(pos > prev && next < prev)
+                        break;
+                //Lower edge
+                if(pos < next && prev > next)
+                        break;
+                //Correct SPOT :-)
+                if(pos < next && pos > prev)
+                        break;
+                if(pos > next) { 
+			// Mov up 
+                        list_move(&sd->queue,&rnext->queuelist);
+                        rprev = rnext;
+                        prev = next;
+                        rnext = list_entry(sd->queue.next, struct request,
+                                           queuelist);
+                        next = blk_rq_pos(rnext);
+                } else {
+			// Move down
+                        list_move_tail(&sd->queue,&rprev->queuelist);
+                        rnext = rprev;
+                        next = prev;
+                        rprev = list_entry(sd->queue.prev, struct request,
+                                          queuelist);
+                        prev = blk_rq_pos(rprev);
+                }
+        }
 }
 
-static void sstf_print_list(struct request_queue *q)
-{
-	struct sstf_data *nd = q->elevator->elevator_data;
-
-	struct list_head* position_print;
-	struct request* print_node;
-	printk("TEAM8 : Printing List: ");
-	list_for_each(position_print, &nd->queue) {
-		print_node = list_entry(position_print, struct request, queuelist);
-		printk("%lu,", (unsigned long)blk_rq_pos(print_node));
-	}
-	printk("\n");
+// get_distance - returns absolute distance between current and given request
+static int get_distance(struct sstf_data * sd, struct request * rq) {
+        if(blk_rq_pos(rq) < sd->head_pos)
+                return sd->head_pos - blk_rq_pos(rq);
+        else
+                return blk_rq_pos(rq) - sd->head_pos;
 }
 
-static void sstf_add_request(struct request_queue *q, struct request *rq)
-{
-	
-	struct sstf_data *nd = q->elevator->elevator_data;
-	int added = 0;
-	
-	printk("TEAM8 : Adding :%lu\n", (unsigned long)blk_rq_pos(rq));
-
-	sstf_print_list(q);
-
-	//If the list is empty, do a basic add and return
-	if (list_empty(&nd->queue)){
-		list_add(&rq->queuelist, &nd->queue);
-		nd->next_to_dispatch = nd->queue.next;  
-		nd->queue_count++;
-        printk ("TEAM8 : List Was Empty\n");
-		sstf_print_list(q);
-		return;
-	}
-
-	struct list_head* position;
-	list_for_each(position , &nd->queue) { 
-		
-		struct request* curr_req = list_entry(position, struct request, queuelist);
-		struct request* curr_req_next = list_entry(position->next, struct request, queuelist);
-		
-		sector_t curr_req_sector = blk_rq_pos(curr_req);
-		sector_t next_req_sector = blk_rq_pos(curr_req_next);
-		sector_t new_req_sector = blk_rq_pos(rq);
-	
-		//This is for one item in the queue	
-		if (nd->queue_count == 1){
-			list_add(&rq->queuelist, position);
-			nd->queue_count++;
-			added = 1;
-        	printk ("TEAM8 : Adding second item; next= %p and prev = %p\n" , position->next, position->prev );
-			break;
-		}	
-
-		//This is for general queue addition	
-		if (next_req_sector >= new_req_sector && curr_req_sector <=new_req_sector ){
-			list_add(&rq->queuelist, position);
-			nd->queue_count++;
-			added = 1;
-        	printk ("TEAM8 : Adding 3rd or higher item; next= %p and prev = %p\n" , position->next, position->prev);
-			break;
-		}
-    }
-
-	if(added != 1) {
-		// Our new request must be bigger than all current, add it to the end
-		list_add_tail(&rq->queuelist, &nd->queue);
-		nd->queue_count++;
-		printk("Added to tail!\n");
-	}
-
-	printk("TEAM8 : After adding. Queue count at %d\n", nd->queue_count);
-	sstf_print_list(q);
+// noop_merged_requests - deletes the merged request
+static void noop_merged_requests(struct request_queue *q, struct request *rq,
+                                 struct request *next) {
+        list_del_init(&next->queuelist);
 }
 
-static void *sstf_init_queue(struct request_queue *q)
-{
+// sstf_dispatch - gets shortest distance, removes from que and sends request 
+static int sstf_dispatch(struct request_queue *q, int force) {
+        // ensure real input
+	if (q == NULL) return 0;
 	struct sstf_data *nd;
-	printk("This is TEAM8's queue");
-	nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
-	if (!nd)
+	nd = q->elevator->elevator_data;
+
+	// ensure valid list
+        if (!list_empty(&nd->queue)) {
+                struct request * nextrq, * prevrq, * rq;  
+
+                nextrq = list_entry(nd->queue.next, struct request, queuelist);
+                prevrq = list_entry(nd->queue.prev, struct request, queuelist);
+
+                if(get_distance(nd, nextrq) < get_distance(nd, prevrq))
+                        rq = nextrq;
+                else
+                        rq = prevrq;
+		//remove request
+                list_del_init(&rq->queuelist);
+                nd->head_pos = blk_rq_pos(rq) + blk_rq_sectors(rq) - 1;
+                elv_dispatch_sort(q, rq);
+                //update queue head position
+                sstf_balance(nd);
+		//Tell kernel what is being read/written
+                if(rq_data_dir(rq) == 0)
+                        printk(KERN_INFO "[SSTF] dsp READ %ld\n",(long)blk_rq_pos(rq));
+                else
+                        printk(KERN_INFO "[SSTF] dsp WRITE %ld\n",(long)blk_rq_pos(rq));
+                return 1;
+        }
+        return 0;
+}
+
+// sstf_add_request - check variables find correct postion and then add 
+static void sstf_add_request(struct request_queue *q, struct request *rq) {
+	// ensure valid inputs
+	if (q == NULL || rq == NULL) 
+		return;
+        // variable definitions
+	struct sstf_data *sd = q->elevator->elevator_data;
+        struct request * rnext, * rprev;
+        sector_t next, prev, pos;
+	// base case if list is empty
+        if(list_empty(&sd->queue))  {
+                list_add(&rq->queuelist,&sd->queue);
+                return;
+        }
+	// getting values for variables
+        rnext = list_entry(sd->queue.next, struct request, queuelist);
+        next = blk_rq_pos(rnext);
+        
+	rprev = list_entry(sd->queue.prev, struct request, queuelist);
+        prev = blk_rq_pos(rprev);
+        
+	pos = blk_rq_pos(rq);
+	// Get correct position to add request
+        while(1) {
+                //Upper edge
+                if(pos > prev && next < prev)
+                        break;
+                //Lower edge
+                if(pos < next && prev > next)
+                        break;
+                //correct position
+                if(pos < next && pos > prev)
+                        break;
+                if(pos > next) {
+			// Moving on Up (in the morning)
+                        rprev = rnext;
+                        prev = next;
+                        rnext = list_entry(sd->queue.next, struct request,
+                                           queuelist);
+                        next = blk_rq_pos(rnext);
+                } else {
+			// down, down, down and the flames go higher
+                        rnext = rprev;
+                        next = prev;
+                        rprev = list_entry(sd->queue.prev, struct request,
+                                          queuelist);
+                        prev = blk_rq_pos(rprev);
+                }
+        }
+	// now add at the correct position
+        __list_add(&rq->queuelist, &rprev->queuelist, &rnext->queuelist);
+        printk(KERN_INFO "[SSTF] add %ld",(long) blk_rq_pos(rq));
+}
+
+// noop_queue_empty - return count of queue 
+static int noop_queue_empty(struct request_queue *q) {
+	if ( q == NULL) 
+		return 0;	
+	// get data 
+        struct sstf_data *nd = q->elevator->elevator_data;
+        return list_empty(&nd->queue);
+}
+
+// noop_former_request - returns previous reuest from the list
+static struct request *noop_former_request(struct request_queue *q, 
+		struct request *rq) {
+	if (q == NULL || rq == NULL) 
+		return 0;
+	// get variable and return nessicary value 
+	struct sstf_data *nd = q->elevator->elevator_data;
+        if (rq->queuelist.prev == &nd->queue)
+                return NULL;
+        return list_entry(rq->queuelist.prev, struct request, queuelist);
+}
+
+// noop_latter_request - returns next request from the list
+static struct request *noop_latter_request(struct request_queue *q,
+		struct request *rq) {
+	if (q == NULL || rq == NULL) 
+		return 0;
+	// get variable and return nessicary value
+        struct sstf_data *nd = q->elevator->elevator_data;
+        if (rq->queuelist.next == &nd->queue)
+                return NULL;
+        return list_entry(rq->queuelist.next, struct request, queuelist);
+}
+
+// noop_init_que - Setup data structure 
+static void *noop_init_queue(struct request_queue *q) {
+	if (q == NULL) 
 		return NULL;
-	INIT_LIST_HEAD(&nd->queue);
-	nd->queue_count = 0;
-	return nd;
+	// create our data structure
+        struct sstf_data *nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
+	// check Kmalloc return value
+        if (!nd)
+                return NULL;
+	// Initialize list poistion and head value and return data object
+        INIT_LIST_HEAD(&nd->queue);
+        nd->head_pos = 0;
+        return nd;
 }
 
-static void sstf_exit_queue(struct elevator_queue *e)
-{
-	struct sstf_data *nd = e->elevator_data;
+// noop_exit_queue - delete elevator 
+static void noop_exit_queue(elevator_t *e) {
+	if (e == NULL)
+		return;
+	// get data to clear then free it
+        struct sstf_data *nd = e->elevator_data;
 
-	BUG_ON(!list_empty(&nd->queue));
-	kfree(nd);
+        BUG_ON(!list_empty(&nd->queue));
+        kfree(nd);
 }
 
-static int sstf_deny_merge(struct request_queue *req_q, struct request *req,
-			struct bio *bio)
-{
-	return ELEVATOR_NO_MERGE;
-}
-
-static struct elevator_type elevator_sstf = {
-	.ops = {
-		.elevator_allow_merge_fn 	= sstf_deny_merge,
-		.elevator_dispatch_fn		= sstf_dispatch,
-		.elevator_add_req_fn		= sstf_add_request,
-		.elevator_init_fn			= sstf_init_queue,
-		.elevator_exit_fn			= sstf_exit_queue,
-	},
-	.elevator_name = "sstf",
-	.elevator_owner = THIS_MODULE,
+// Delecration of operations for elevator_type
+static struct elevator_type elevator_noop = {
+        .ops = {
+                .elevator_merge_req_fn          = noop_merged_requests,
+                .elevator_dispatch_fn           = sstf_dispatch,
+                .elevator_add_req_fn            = sstf_add_request,
+                .elevator_queue_empty_fn        = noop_queue_empty,
+                .elevator_former_req_fn         = noop_former_request,
+                .elevator_latter_req_fn         = noop_latter_request,
+                .elevator_init_fn               = noop_init_queue,
+                .elevator_exit_fn               = noop_exit_queue,
+  },
+        .elevator_name = "noop",
+        .elevator_owner = THIS_MODULE,
 };
 
-static int __init sstf_init(void)
+// noop_init - returns elv_register value
+static int __init noop_init(void)
 {
-	elv_register(&elevator_sstf);
-
-	return 0;
+        return elv_register(&elevator_noop);
 }
 
-static void __exit sstf_exit(void)
+// noop_exit - unregisters elevator
+static void __exit noop_exit(void)
 {
-	elv_unregister(&elevator_sstf);
+        elv_unregister(&elevator_noop);
 }
 
-module_init(sstf_init);
-module_exit(sstf_exit);
+module_init(noop_init);
+module_exit(noop_exit);
 
 
-MODULE_AUTHOR("CS411 - Group 8");
+MODULE_AUTHOR("Group 14 - OSU CS411 F13");
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("SSTF IO scheduler");
+MODULE_DESCRIPTION("SSTF IO scheduler ");
+
+
+
+
+
+
+
+
+/* Example code we found is located at: 
+ * http://code.google.com/p/cs411g16/source/browse/branches/project4/
+ * 	block/sstf-iosched.c?r=100
+ * https://github.com/ryleyherrington/linux_kernel_411/blob/master/
+ * 	sstf-io/sstf-iosched.c
+ * http://searchcode.com/codesearch/view/24999107
+ *
+ */

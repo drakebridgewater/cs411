@@ -10,8 +10,8 @@
 
 struct sstf_data {
         struct list_head queue;
-		sector_t head_pos;
-		int direction; 
+        sector_t head_pos;
+        int direction, queue_count;
 };
 
 static void sstf_merged_requests(struct request_queue *q, struct request *rq,
@@ -23,49 +23,49 @@ static void sstf_merged_requests(struct request_queue *q, struct request *rq,
 static int sstf_dispatch(struct request_queue *q, int force)
 {
         struct sstf_data *nd = q->elevator->elevator_data;
-		
-		if (q==NULL) 
-			return 0;
-		
+                
+                if (q==NULL) 
+                        return 0;
+                
         if (!list_empty(&nd->queue)) {
                 struct request *rq, *nextrq, *prevrq;
-				sector_t next, prev;
-				
+                sector_t next, prev;
+                                
                 nextrq = list_entry(nd->queue.next, struct request, queuelist);
                 next = blk_rq_pos(nextrq);
-				
-				prevrq = list_entry(nd->queue.prev, struct request, queuelist);
-				prev = blk_rq_pos(prevrq);
-								
-				if(nd->direction > 0 && next > prev) {
-					/* MOVE UP */
-					rq = nextrq;
-				
-				} else if(nd->direction < 0 && next < prev) {
-					/* UPPER BOUND */
-					rq = prevrq;
-					nd->direction = -1;
-				} 
-				else if(nd->direction < 0 && next < prev) {
-					/* Move DOWN */
-					rq = prevrq;
-				} else {
-					/* LOWER BOUND */
-					rq = nextrq;
-					nd->direction = 1;
-				}
-				
-				/* remove request */ 
+                                
+                prevrq = list_entry(nd->queue.prev, struct request, queuelist);
+                prev = blk_rq_pos(prevrq);
+                                                                
+                if(nd->direction > 0 && next > prev) {
+                        /* MOVE UP */
+                        rq = nextrq;
+                } else if(nd->direction < 0 && next < prev) {
+                        /* UPPER BOUND */
+                        rq = prevrq;
+                        nd->direction = -1;
+                } else if(nd->direction < 0 && next < prev) {
+                        /* Move DOWN */
+                        rq = prevrq;
+                } else {
+                        /* LOWER BOUND */
+                        rq = nextrq;
+                        nd->direction = 1;
+                }
+                /* remove request */ 
                 list_del_init(&rq->queuelist);
+		nd->queue_count--;
                 nd->head_pos = blk_rq_pos(rq)  + blk_rq_sectors(rq) - 1;
                 elv_dispatch_sort(q, rq);
                 /* update queue head position
                 sstf_balance(nd); */
-				
+                                
                 if(rq_data_dir(rq) == 0)
-                        printk(KERN_INFO "[SSTF] dsp READ %ld\n",(long)blk_rq_sectors(rq));
+                        printk(KERN_INFO "[SSTF] dsp READ %ld\n",
+					(long)blk_rq_sectors(rq));
                 else
-                        printk(KERN_INFO "[SSTF] dsp WRITE %ld\n",(long)blk_rq_sectors(rq));
+                        printk(KERN_INFO "[SSTF] dsp WRITE %ld\n",
+					(long)blk_rq_sectors(rq));
                 return 1;
         }
         return 0;
@@ -74,50 +74,45 @@ static int sstf_dispatch(struct request_queue *q, int force)
 static void sstf_add_request(struct request_queue *q, struct request *rq)
 {
         struct sstf_data *sd = q->elevator->elevator_data;
-		struct request * rnext, * rprev;
-        sector_t next, prev, pos;
-		/* BASE CASE */
-		if(list_empty(&sd->queue))  {
+	struct list_head *position;
+        /* BASE CASE */
+        if(list_empty(&sd->queue))  {
                 list_add(&rq->queuelist,&sd->queue);
+		sd->queue_count++;
                 return;
         }
+
+	sector_t rq_sect, cur_sect, next_sect;
+	rq_sect = blk_rq_pos(rq);
+
+	list_for_each(position, &sd->queue) {
 		
-		rnext = list_entry(sd->queue.next, struct request, queuelist);
-		next = blk_rq_pos(rnext);
-		rprev = list_entry(sd->queue.prev, struct request, queuelist);
-		prev = blk_rq_pos(rprev);
-        
-		pos = blk_rq_pos(rq);
-		/* Get correct position to add request */
-        while(1) {
-                /* Upper edge */
-                if(pos > prev && next < prev)
-                        break;
-                /* Lower edge */
-                if(pos < next && prev > next)
-                        break;
-                /* correct position */
-                if(pos < next && pos > prev)
-                        break;
-                if(pos > next) {
-						/* Moving on Up (in the morning) */
-                        rprev = rnext;
-                        prev = next;
-                        rnext = list_entry(sd->queue.next, struct request,
-                                           queuelist);
-                        next = blk_rq_pos(rnext);
-                } else {
-						/* down, down, down and the flames went higher */
-                        rnext = rprev;
-                        next = prev;
-                        rprev = list_entry(sd->queue.prev, struct request,
-                                          queuelist);
-                        prev = blk_rq_pos(rprev);
-                }
-        }
-		/* now add at the correct position */
-        __list_add(&rq->queuelist, &rprev->queuelist, &rnext->queuelist);
-        printk(KERN_INFO "[SSTF] add %ld",(long) blk_rq_sectors(rq));
+		if (sd->queue_count == 1) {
+			list_add(&rq->queuelist, position);
+			sd->queue_count++;
+			printk(KERN_INFO "[SSTF] added when 1 element long\n");
+	                return;
+		}
+		
+		struct request *cur_rq = list_entry(position, 
+				struct request, queuelist);
+		cur_sect = blk_rq_pos(cur_rq);
+		
+		struct request *next_rq = list_entry(position->next, 
+				struct request, queuelist);
+		next_sect = blk_rq_pos(next_rq);
+
+		if (rq_sect >= cur_sect && rq_sect <= next_sect) {
+			list_add(&rq->queuelist, position);
+			sd->queue_count++;
+			printk(KERN_INFO "[SSTF] added in Sort\n");
+	                return;
+		}
+	}
+        /* now add at the correct position */
+        list_add_tail(&rq->queuelist, &sd->queue);
+	sd->queue_count++;
+        printk(KERN_INFO "[SSTF] added to end\n");
 }
 
 static struct request *
@@ -161,9 +156,9 @@ static void sstf_exit_queue(struct elevator_queue *e)
 
 static struct elevator_type elevator_sstf = {
         .ops = {
-                .elevator_merge_req_fn		= sstf_merged_requests,
-                .elevator_dispatch_fn		= sstf_dispatch,
-                .elevator_add_req_fn		= sstf_add_request,
+                .elevator_merge_req_fn                = sstf_merged_requests,
+                .elevator_dispatch_fn                = sstf_dispatch,
+                .elevator_add_req_fn                = sstf_add_request,
                 .elevator_former_req_fn     = sstf_former_request,
                 .elevator_latter_req_fn     = sstf_latter_request,
                 .elevator_init_fn           = sstf_init_queue,

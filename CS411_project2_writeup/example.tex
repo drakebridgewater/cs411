@@ -1,0 +1,97 @@
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+
+\usepackage{geometry}
+\geometry{textheight=8.5in, textwidth=6in}
+
+%random comment
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+
+\newcommand{\toc}{\tableofcontents}
+
+%\usepackage{hyperref}
+
+\def\name{Drake Bridgewater}
+
+%pull in the necessary preamble matter for pygments output
+\input{pygments.tex}
+
+%% The following metadata will show up in the PDF properties
+% \hypersetup{
+%   colorlinks = false,
+%   urlcolor = black,
+%   pdfauthor = {\name},
+%   pdfkeywords = {cs411 ``operating systems 2''},
+%   pdftitle = {CS 411 Project 2},
+%   pdfsubject = {CS 311 Project 2},
+%   pdfpagemode = UseNone
+% }
+
+\parindent = 0.0 in
+\parskip = 0.1 in
+
+\begin{document}
+
+\begin{titlepage}
+	\vspace*{4cm}
+	\begin{flushright}
+	{\huge
+		CS 411 \\[1cm]
+	}
+	{\large
+		Project 2: Implement SSTF I/O Scheduler
+	}
+	\today
+	\end{flushright}
+	\begin{flushleft}
+		Class MWF 9-9:50 AM
+	\end{flushleft}
+	\begin{flushright}
+		Drake Bridgewater
+	\vfill
+	\end{flushright}
+\end{titlepage}
+
+
+\tableofcontents
+
+%input the pygmentized output of sstf-iosched.c, using a (hopefully) unique name
+%this file only exists at compile time. Feel free to change that.
+
+\newpage
+
+\section{What do you think the main point of this assignment is?} 
+After many days of attempting to understand the kernel and why I could not compile the given kernel with the given patch I got an understanding of simple operation of the Linux environment. I know the intended main point was to understand how the scheduling works in general, but I got more out of this because of my troubles. I now understand how to access basic files within the system, how the diff function works, and what the big deal with git is and how useful it is.
+\section{How did you personally approach the problem? Design decisions, algorithm, etc.}
+Our team was having difficulty getting the kernel to compile correctly therefore our time to work on the actual assignment was limited and we had to implement our solution in the final three days. This led use to poor choices and we found a similar implementation online but after lecture on Oct. 25 I had a better understanding and when we looked at the online code we noticed some major errors and we decided that we should implement the entire thing by ourselves. We thought about doing some sudo code but we thought we had a decent enough understanding to implement it without. In the end we probably could have saved some time if we wrote some sudo code.
+
+As for the algorithm we took our understanding of linked list from the data structures course and applied that along with the new knowledge we gained from I/O. 
+\section{How did you ensure your solution was correct? Testing details, for instance.}
+To ensure that our solution is correct we only had time to boot it.
+
+\section{What did you learn?}
+During this project I learned so many things that are barely related to I/O Scheduling, but I know have a much better understanding of Linux in general. I can get around fluidly without have to check cheat sheets every other minute.
+
+
+\newpage
+
+\section*{Appendix 1: Source Code}
+\input{__sstf-iosched.c.tex}
+
+\end{document}

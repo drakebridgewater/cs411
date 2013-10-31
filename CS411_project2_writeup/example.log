@@ -1,8 +1,8 @@
 This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=latex 2013.10.4)  30 OCT 2013 21:24
 entering extended mode
  %&-line parsing enabled.
-**main.tex
-(./main.tex
+**example.tex
+(./example.tex
 LaTeX2e <2005/12/01>
 Babel <v3.8h> and hyphenation patterns for english, usenglishmax, dumylang, noh
 yphenation, arabic, basque, bulgarian, coptic, welsh, czech, slovak, german, ng
@@ -159,26 +159,18 @@ File: dvipsnam.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
 Package: url 1999/03/02  ver 1.4  Verb mode for urls, email addresses, and file
  names
 )
-(/usr/share/texmf/tex/latex/tools/array.sty
-Package: array 2005/08/23 v2.4b Tabular extension package (FMi)
-\col@sep=\dimen114
-\extrarowheight=\dimen115
-\NC@list=\toks29
-\extratabsurround=\skip49
-\backup@length=\skip50
-)
 (/usr/share/texmf/tex/latex/preprint/balance.sty
 Package: balance 1999/02/23 4.3 (PWD)
-\oldvsize=\dimen116
+\oldvsize=\dimen114
 )
 (/usr/share/texmf/tex/latex/subfigure/subfigure.sty
 Package: subfigure 2002/03/15 v2.1.5 subfigure package
-\subfigtopskip=\skip51
-\subfigcapskip=\skip52
-\subfigcaptopadj=\dimen117
-\subfigbottomskip=\skip53
-\subfigcapmargin=\dimen118
-\subfiglabelskip=\skip54
+\subfigtopskip=\skip49
+\subfigcapskip=\skip50
+\subfigcaptopadj=\dimen115
+\subfigbottomskip=\skip51
+\subfigcapmargin=\dimen116
+\subfiglabelskip=\skip52
 \c@subfigure=\count100
 \c@lofdepth=\count101
 \c@subtable=\count102
@@ -188,25 +180,25 @@ Package: subfigure 2002/03/15 v2.1.5 subfigure package
 * Local config file subfigure.cfg used *
 ****************************************
 (/usr/share/texmf/tex/latex/subfigure/subfigure.cfg)
-\subfig@top=\skip55
-\subfig@bottom=\skip56
+\subfig@top=\skip53
+\subfig@bottom=\skip54
 )
 (/usr/share/texmf/tex/latex/enumitem/enumitem.sty
 Package: enumitem 2005/05/12 v1.1 Customized lists
-\labelindent=\skip57
-\enit@outerparindent=\dimen119
+\labelindent=\skip55
+\enit@outerparindent=\dimen117
 )
 (/usr/share/texmf/tex/latex/pstricks/pstricks.sty
 Package: pstricks 2006/08/10 v0.32 LaTeX wrapper for `PSTricks' (RN,HV)
 
 (/usr/share/texmf/tex/generic/pstricks/pstricks.tex
 `PSTricks' v1.15  <2006/12/22> (tvz)
-\pst@dima=\dimen120
-\pst@dimb=\dimen121
-\pst@dimc=\dimen122
-\pst@dimd=\dimen123
-\pst@dimg=\dimen124
-\pst@dimh=\dimen125
+\pst@dima=\dimen118
+\pst@dimb=\dimen119
+\pst@dimc=\dimen120
+\pst@dimd=\dimen121
+\pst@dimg=\dimen122
+\pst@dimh=\dimen123
 \pst@hbox=\box30
 \pst@boxg=\box31
 \pst@cnta=\count104
@@ -215,19 +207,19 @@ Package: pstricks 2006/08/10 v0.32 LaTeX wrapper for `PSTricks' (RN,HV)
 \pst@cntd=\count107
 \pst@cntg=\count108
 \pst@cnth=\count109
-\pst@toks=\toks30
+\pst@toks=\toks29
 (/usr/share/texmf/tex/generic/pstricks/pstricks.con)
-\psunit=\dimen126
-\psxunit=\dimen127
-\psyunit=\dimen128
-\pslinewidth=\dimen129
-\pst@customdefs=\toks31
-\pslinearc=\dimen130
-\everypsbox=\toks32
-\psframesep=\dimen131
-\pslabelsep=\dimen132
-\psk@shift=\dimen133
-\pst@shift=\dimen134
+\psunit=\dimen124
+\psxunit=\dimen125
+\psyunit=\dimen126
+\pslinewidth=\dimen127
+\pst@customdefs=\toks30
+\pslinearc=\dimen128
+\everypsbox=\toks31
+\psframesep=\dimen129
+\pslabelsep=\dimen130
+\psk@shift=\dimen131
+\pst@shift=\dimen132
 \theoverlaybox=\box32
 )
 File: pstricks.tex 2006/12/22 v1.15 `PSTricks' (tvz)
@@ -257,111 +249,60 @@ Package: pst-node 2006/01/01 package wrapper for pst-node.tex
 \psrow=\count110
 \pscol=\count111
 \psmatrixcnt=\count112
-\psrowsep=\skip58
-\pscolsep=\skip59
+\psrowsep=\skip56
+\pscolsep=\skip57
 )
 File: pst-node.tex 2000/11/09 97 patch 11 `pst-node' (tvz)
-) (/usr/share/texmf/tex/latex/hyperref/hyperref.sty
-Package: hyperref 2007/02/07 v6.75r Hypertext links for LaTeX
-\@linkdim=\dimen135
-\Hy@linkcounter=\count113
-\Hy@pagecounter=\count114
-
-(/usr/share/texmf/tex/latex/hyperref/pd1enc.def
-File: pd1enc.def 2007/02/07 v6.75r Hyperref: PDFDocEncoding definition (HO)
-)
-(/usr/share/texmf/tex/latex/config/hyperref.cfg
-File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
-)
-(/usr/share/texmf/tex/latex/oberdiek/kvoptions.sty
-Package: kvoptions 2006/08/22 v2.4 Connects package keyval with LaTeX options (
-HO)
-)
-Package hyperref Info: Hyper figures OFF on input line 2288.
-Package hyperref Info: Link nesting OFF on input line 2293.
-Package hyperref Info: Hyper index ON on input line 2296.
-Package hyperref Info: Plain pages OFF on input line 2303.
-Package hyperref Info: Backreferencing OFF on input line 2308.
-
-Implicit mode ON; LaTeX internals redefined
-Package hyperref Info: Bookmarks ON on input line 2444.
-LaTeX Info: Redefining \url on input line 2599.
-\Fld@menulength=\count115
-\Field@Width=\dimen136
-\Fld@charsize=\dimen137
-\Choice@toks=\toks33
-\Field@toks=\toks34
-Package hyperref Info: Hyper figures OFF on input line 3102.
-Package hyperref Info: Link nesting OFF on input line 3107.
-Package hyperref Info: Hyper index ON on input line 3110.
-Package hyperref Info: backreferencing OFF on input line 3117.
-Package hyperref Info: Link coloring OFF on input line 3122.
-\Hy@abspage=\count116
-\c@Item=\count117
-\c@Hfootnote=\count118
-)
-*hyperref using default driver hdvips*
-(/usr/share/texmf/tex/latex/hyperref/hdvips.def
-File: hdvips.def 2007/02/07 v6.75r Hyperref driver for dvips
-
-(/usr/share/texmf/tex/latex/hyperref/pdfmark.def
-File: pdfmark.def 2007/02/07 v6.75r Hyperref definitions for pdfmark specials
-\pdf@docset=\toks35
-\pdf@box=\box33
-\pdf@toks=\toks36
-\pdf@defaulttoks=\toks37
-\Fld@listcount=\count119
-))
-(/usr/share/texmf/tex/latex/geometry/geometry.sty
+) (/usr/share/texmf/tex/latex/geometry/geometry.sty
 Package: geometry 2002/07/08 v3.2 Page Geometry
-\Gm@cnth=\count120
-\Gm@cntv=\count121
-\c@Gm@tempcnt=\count122
-\Gm@bindingoffset=\dimen138
-\Gm@wd@mp=\dimen139
-\Gm@odd@mp=\dimen140
-\Gm@even@mp=\dimen141
-\Gm@dimlist=\toks38
+\Gm@cnth=\count113
+\Gm@cntv=\count114
+\c@Gm@tempcnt=\count115
+\Gm@bindingoffset=\dimen133
+\Gm@wd@mp=\dimen134
+\Gm@odd@mp=\dimen135
+\Gm@even@mp=\dimen136
+\Gm@dimlist=\toks32
 
-(/usr/share/texmf/tex/xelatex/xetexconfig/geometry.cfg))
-Package hyperref Info: Option `colorlinks' set `true' on input line 41.
- (./main.aux)
-\openout1 = `main.aux'.
+(/usr/share/texmf/tex/xelatex/xetexconfig/geometry.cfg)) (./pygments.tex
+(/usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+Package: fancyvrb 1998/07/17
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 43.
-LaTeX Font Info:    ... okay on input line 43.
-Package hyperref Info: Link coloring ON on input line 43.
+Style option: `fancyvrb' v2.6, with DG/SPQR fixes <1998/07/17> (tvz)
+\FV@CodeLineNo=\count116
+\FV@InFile=\read1
+\FV@TabBox=\box33
+\c@FancyVerbLine=\count117
+\FV@StepNumber=\count118
+\FV@OutFile=\write3
 
-(/usr/share/texmf/tex/latex/hyperref/nameref.sty
-Package: nameref 2006/12/27 v2.28 Cross-referencing by name of section
+No file fancyvrb.cfg.
+) (/usr/share/texmf/tex/latex/base/inputenc.sty
+Package: inputenc 2006/05/05 v1.1b Input encoding file
+\inpenc@prehook=\toks33
+\inpenc@posthook=\toks34
 
-(/usr/share/texmf/tex/latex/oberdiek/refcount.sty
-Package: refcount 2006/02/20 v3.0 Data extraction from references (HO)
-)
-\c@section@level=\count123
-)
-LaTeX Info: Redefining \ref on input line 43.
-LaTeX Info: Redefining \pageref on input line 43.
- (./main.out) (./main.out)
-\@outlinefile=\write3
-\openout3 = `main.out'.
+(/usr/share/texmf/tex/latex/base/latin1.def
+File: latin1.def 2006/05/05 v1.1b Input encoding file
+))) (./example.aux)
+\openout1 = `example.aux'.
 
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
 -------------------- Geometry parameters
 paper: letterpaper
 landscape: --
-twocolumn: true
+twocolumn: --
 twoside: --
 asymmetric: --
 h-parts: 90.3375pt, 433.62pt, 90.33751pt
@@ -387,51 +328,34 @@ driver:
 \headheight 12.0pt
 \headsep    25.0pt
 \footskip   30.0pt
-\marginparwidth 4.0pt
-\marginparsep   10.0pt
+\marginparwidth 65.0pt
+\marginparsep   11.0pt
 \columnsep  10.0pt
 \skip\footins  9.0pt plus 4.0pt minus 2.0pt
 \hoffset 0.0pt
 \voffset 0.0pt
 \mag 1000
-\@twocolumntrue 
+
 (1in=72.27pt, 1cm=28.45pt)
 -----------------------
-LaTeX Font Info:    Try loading font information for U+msa on input line 57.
+ [1
 
-(/usr/share/texmf/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2002/01/19 v2.2g AMS font definitions
-)
-LaTeX Font Info:    Try loading font information for U+msb on input line 57.
+]
+(./example.toc)
+\tf@toc=\write4
+\openout4 = `example.toc'.
 
-(/usr/share/texmf/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2002/01/19 v2.2g AMS font definitions
-)
-Overfull \hbox (271.68579pt too wide) in paragraph at lines 57--60
-[][][][][][]
- []
-
-
-Overfull \hbox (29.6879pt too wide) in paragraph at lines 57--60
-[][][][][][]
- []
-
-
-Overfull \hbox (240.68607pt too wide) in paragraph at lines 57--60
-[][][][][][] 
- []
-
-[1
-
-
-] (./main.aux) ) 
+ [1] [2] (./__sstf-iosched.c.tex
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 12.
+ [3] [4] [5]) [6] (./example.aux) ) 
 Here is how much of TeX's memory you used:
- 5926 strings out of 256217
- 75427 string characters out of 1917095
- 161099 words of memory out of 1500000
- 9143 multiletter control sequences out of 10000+200000
- 5507 words of font info for 23 fonts, out of 1200000 for 2000
+ 4554 strings out of 256217
+ 55026 string characters out of 1917095
+ 133757 words of memory out of 1500000
+ 7793 multiletter control sequences out of 10000+200000
+ 5486 words of font info for 21 fonts, out of 1200000 for 2000
  645 hyphenation exceptions out of 8191
- 30i,6n,37p,723b,347s stack positions out of 5000i,500n,6000p,200000b,15000s
+ 30i,5n,37p,673b,280s stack positions out of 5000i,500n,6000p,200000b,15000s
 
-Output written on main.dvi (1 page, 5388 bytes).
+Output written on example.dvi (7 pages, 27088 bytes).
